@@ -73,9 +73,21 @@ After analyzing the output, I was able to discern that the first TCP handshake o
 
 We were able to determine that static.30.26.216.clients.your-server.de is the server because 172.16.146.2 reaches out first with the SYN packet. As far as I am aware, in almost all cases, it will be the client that initiates the connection to a server. After all, how often does one ever spontaneously receive requests from a webpage enticing us to view its resources? In addition, the port numbers also suggest this client-server configuration. The host with IP address 172.16.146.2 reaches out using an large ephemeral port number, while static.30.26.216.clients.your-server.de utilizes port 443, which is the archetypal port for HTTPS traffic, utilized by servers. As a final piece of evidence, the hostname of the suspected server actally contains the phrase 'your-server' as can be ascertained by visual observation. 
 
+The HTBA module then informed us that there was some network traffic in the file containing a DNS request for apache.org, and prompts us to recover the IP address delivered by the DNS server. 
 
+To answer this question, we used TCPDump's -l flag, which allows the user to pipe its output into different programs, the flag 'port 53', which filters for DNS traffic, and then piped the output of the command into the grep tool, searching for the string 'apache'. The final command was as follows:
 
+        tcpdump -lr TCPDump-lab-2.pcap port 53 | grep apache
 
+<div>
+  <img src="./lab-images/TCPDump/GrepApache.png" alt="Network Traffic Analysis Image" width="1400" height="150">
+
+  *Ref. 3: The output of the tcpdump command, using the port and -l flags, and being piped into the grep command*
+</div>
+
+Thus, by examining the output of this command (specifically the A records we were able to see the output), we were able to recognize that there are two different servers hosting apache.org, 95.216.26.30 and 207.244.88.140.
+
+After we had discovered this information, we moved onto the next segment of this module. Here, we were asked to find the DNS server for the network segment as well as what domain names were requested within the pcap file. To answer the first question, we simply filtered via 
 
 
 
