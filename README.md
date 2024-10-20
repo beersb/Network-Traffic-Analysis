@@ -1,4 +1,4 @@
-# Network-Traffic-Analysis
+# Network Traffic Analysis Lab
 
 ## Objective
 
