@@ -87,7 +87,31 @@ To answer this question, we used TCPDump's -l flag, which allows the user to pip
 
 Thus, by examining the output of this command (specifically the A records we were able to see the output), we were able to recognize that there are two different servers hosting apache.org, 95.216.26.30 and 207.244.88.140.
 
-After we had discovered this information, we moved onto the next segment of this module. Here, we were asked to find the DNS server for the network segment as well as what domain names were requested within the pcap file. To answer the first question, we simply filtered via 
+After we had discovered this information, we moved onto the next segment of this module. Here, we were asked to find the DNS server for the network segment as well as what domain names were requested within the pcap file. To answer the first question, we simply filtered via FFIIXXXX MMMEEE
+
+## Wireshark
+The module now shifted gears, transitioning from the cli-based TCPDump to the GUI-based Wireshark. For this section of the module, a live capture and a virtual machine were used as the subject of the investigation, rather than a PCAP file. To access this machine, we needed to use a VPN to tie into the HTBA private network, using an OpenVPN file provide by the platform. The following commands established the VPN connection:
+
+        sudo openvpn academy-regular.ovpn
+
+We then needed to use an RDP client to connect to the specific machine in question, in this case, we will download and use XFreeRDP:
+
+        sudo apt install freerdp2-x11
+        xfreerdp /u:htb-student /p:*********** /v:***********
+
+where /p is followed by the user's password, and /v is followed by the target host's IP address. Now, our analysis was able to begin. We opened Wireshark via the command line, and then used the Capture tab on the radial menu to select the ENS224 interface, and opened a capture session on this interface. 
+
+After allowing the capture to run for a few minutes, we returned to the machine to look at the traffic that had been generated. The HTBA module pointed us towards examining the FTP traffic within the capture. Thus, we this is where we focused our attention, using the string 'ftp' as a display filter to eliminate everything besides FTP traffic. Almost immediately, we were able to visually identify a few interesting details. Firstly, we noticed an anonymous login, which we know from our experience dabbling in penetration testing, is a major misconfiguration. This struck us as possibly malicious or suspicious traffic. 
+
+<div>
+  <img src="./lab-images/Wireshark/FTP/StrangeFTPTraffic.png" alt="Network Traffic Analysis Image" width="1400" height="150">
+
+  *Ref. 4: A snapshot of the suspicious FTP traffic, including the Anonymous login traffic*
+</div>
+
+The module asked us to find and save to our host the file that was transferred in this FTP exchange. Thus, we used Wireshark to follow the FTP conversation, and were able to discover a file was transferred called flag.jpeg from the FTP server to the client. 
+
+he module provides us with yet another pcap file, this time 
 
 
 
