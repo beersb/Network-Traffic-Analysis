@@ -44,11 +44,38 @@ After this initial glance at the traffic, the module prompted us to record the h
 
 using the following ports
 
-        50
+        53
         80
         443
         1337
 
 The IP address 172.16.146.2 was acting as the client in the interactions, while the rest of the hosts seemed to be acting as servers. 
+
+Next, we attempted to identify the very first *complete* TCP handshake in the file. To answer this question, it was best to first review what the TCP handshake looks like:
+
+        127.0.0.1.12345 > 127.0.0.1.80:	Flags [S], seq ...
+        127.0.0.1.80 > 127.0.0.1.12345:	Flags [S.], seq ...
+        127.0.0.1.12345 > 127.0.0.1.80:	Flags [.], seq ...
+
+First, there is the initial packet where one typically has a client reaching out to a server with the SYN flag sent-- [S]. After this, the server responds with both the SYN and ACK flags set-- [S.], indicating, on the one hand, that it has received the client's packet, and on the other, that it would like the client ot synchronizew with its own responses. Finally, the client responds with its own ACK packet-- [.]. 
+
+Because the file was rather long and messy, I used the -s and -c flags, which limit the number of bytes included in each packet and the number of packets included in the cli output, respectively, to clean up the output for this stage of the analysis.
+
+        tcpdump -s 50 -c 50 -r TCPDump-lab-2.PCAP
+
+After analyzing the output, I was able to discern that the first TCP handshake occurs between 172.16.146.2 (as the client) and static.30.26.216.clients.your-server.de (the server).
+
+<div>
+  <img src="./lab-images/TCPDump/TCPDumpSandCFlags.png" alt="Network Traffic Analysis Image" width="1400" height="300">
+
+  *Ref. 2: An image of the PCAP capture after reducing the output, including the first TCP handshake*
+</div>
+
+We were able to determine that static.30.26.216.clients.your-server.de is the server because 172.16.146.2 reaches out first with the SYN packet. As far as I am aware, in almost all cases, it will be the client that initiates the connection to a server. After all, how often does one ever spontaneously receive requests from a webpage enticing us to view its resources? In addition, the port numbers also suggest this client-server configuration. The host with IP address 172.16.146.2 reaches out using an large ephemeral port number, while static.30.26.216.clients.your-server.de utilizes port 443, which is the archetypal port for HTTPS traffic, utilized by servers. As a final piece of evidence, the hostname of the suspected server actally contains the phrase 'your-server' as can be ascertained by visual observation. 
+
+
+
+
+
 
 
