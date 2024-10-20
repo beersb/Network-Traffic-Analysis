@@ -15,6 +15,7 @@ The Network Traffic Analysis Lab follows the Hack The Box Academy Introduction t
 ### Tools Used
 
 - Wireshark and TCPDump for intercepting and scrutinizing network traffic.
+- XFreeRDP for remote host communication.
 
 ## Steps
 
