@@ -87,7 +87,21 @@ To answer this question, we used TCPDump's -l flag, which allows the user to pip
 
 Thus, by examining the output of this command (specifically the A records we were able to see the output), we were able to recognize that there are two different servers hosting apache.org, 95.216.26.30 and 207.244.88.140.
 
-After we had discovered this information, we moved onto the next segment of this module. Here, we were asked to find the DNS server for the network segment as well as what domain names were requested within the pcap file. To answer the first question, we simply filtered via FFIIXXXX MMMEEE
+After we had discovered this information, we moved onto the next segment of this module. Here, we were asked to find the DNS server for the network segment as well as what domain names were requested within the pcap file. To answer the first question, we simply applied a DNS display filter and observed which machine was acting as a server in the interactions. In this case, the server was 172.16.146.1, which indicated that this host was the DNS server for the network segment. Enumerating all of the domain names requested in the capture required a little bit more work. I shifted between several stages of commands and filtering thouse commands with grep, cut, and uniq to get a nice, presentable list. First, I tried simply filtering for port 53 and then grepping the output for the string 'A?', which indicates the client is requesting to resolve a domain into an IP address. The command looked like the following:
+
+    tcpdump port 53 -lr TCPDump-lab-2.PCAP | grep -w 'A?'
+
+where the -w flag instructs grep to look for exact matches. This however, produced a lot of extra output which was a little messy to parse through. Hence, I refined the output further using the cut and uniq commands, to ensure each record was only included once. The final resultant command was
+
+     tcpdump port 53 -lr TCPDump-lab-2.PCAP | grep -w 'A?' | cut -d ' ' -f 8 | uniq
+
+which produced a very nice list of each of the domain names.
+
+<div>
+  <img src="./lab-images/TCPDump/FilteringForDomainNames.png" alt="Network Traffic Analysis Image" width="1400" height="300">
+
+  *Ref. 4: The list of domain names requested by the DNS client in the packet capture*
+</div>  
 
 ## Wireshark
 The module now shifted gears, transitioning from the cli-based TCPDump to the GUI-based Wireshark. For this section of the module, a live capture and a virtual machine were used as the subject of the investigation, rather than a PCAP file. To access this machine, we needed to use a VPN to tie into the HTBA private network, using an OpenVPN file provide by the platform. The following commands established the VPN connection:
