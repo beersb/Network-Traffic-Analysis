@@ -64,7 +64,7 @@ First, there is the initial packet where in which one typically encoutners a cli
 
 Because the file was rather long and messy, I used the -s and -c flags when searching for the first TCP handshake. These two flags limit the number of bytes included when outputting each packet and the number of packets included in the cli output, respectively.
 
-        tcpdump -s 50 -c 50 -r TCPDump-lab-2.PCAP
+        tcpdump -s 50 -c 100 -r TCPDump-lab-2.PCAP
 
 After analyzing the output, I was able to discern that the first TCP handshake that occurs is between 172.16.146.2 (as the client) and static.30.26.216.clients.your-server.de (the server).
 
