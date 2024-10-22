@@ -90,11 +90,11 @@ To answer this question, we used TCPDump's -l flag, which allows the user to pip
 
 Thus, by examining the output of this command (specifically the A records we were able to see the output), we were able to recognize that there are two different servers hosting apache.org, 95.216.26.30 and 207.244.88.140.
 
-After we had discovered this information, we moved onto the next segment of this module. Here, we were asked to find the DNS server for the network segment as well as what domain names were requested within the pcap file. To answer the first question, we simply applied a DNS display filter and observed which machine was acting as a server in the interactions. In this case, the server was 172.16.146.1, which indicated that this host was the DNS server for the network segment. Enumerating all of the domain names requested in the capture required a little bit more work. I shifted between several stages of commands and filtering thouse commands with grep, cut, and uniq to get a nice, presentable list. First, I tried simply filtering for port 53 and then grepping the output for the string 'A?', which indicates the client is requesting to resolve a domain into an IP address. The command looked like the following:
+After we had discovered this information, we moved onto the next segment of this module. Here, we were asked to find the DNS server for the network segment as well as what domain names were requested within the pcap file. To answer the first question, we simply applied a DNS display filter and observed which machine was acting as a server in the interactions. In this case, the server was 172.16.146.1, which indicated that this host was the DNS server for the network segment. Enumerating all of the domain names requested in the capture required a little bit more work. I applied several stages of filtration in the final command, ultimately using grep, cut, and uniq to get a more easily readable list. First, I tried simply filtering for port 53 and then grepping the output for the string 'A?', which indicates the client is requesting to resolve a domain into an IP address. The command looked like the following:
 
     tcpdump port 53 -lr TCPDump-lab-2.PCAP | grep -w 'A?'
 
-where the -w flag instructs grep to look for exact matches. This however, produced a lot of extra output which was a little messy to parse through. Hence, I refined the output further using the cut and uniq commands, to ensure each record was only included once. The final resultant command was
+where the -w flag instructs grep to look for exact matches. This however, produced a lot of extra output which was a little difficult to parse through. Hence, I refined the output further using the cut and uniq commands, to ensure each record was only included once. The final resultant command was
 
      tcpdump port 53 -lr TCPDump-lab-2.PCAP | grep -w 'A?' | cut -d ' ' -f 8 | uniq
 
@@ -107,7 +107,7 @@ which produced a very nice list containing each of the domain names requested fr
 </div>  
 
 ## Wireshark
-The module now shifted gears, transitioning from the cli-based TCPDump to the GUI-based Wireshark. For this section of the module, a live capture and a virtual machine were used as the subject of the investigation, rather than a PCAP file. To access this machine, we needed to use a VPN to tie into the HTBA private network, using an OpenVPN file provide by the platform. The following commands established the VPN connection:
+The module now shifted gears, transitioning from the cli-based TCPDump to the GUI-based Wireshark. For this section of the module, a live capture and a virtual machine were used as the subject of the investigation, rather than a PCAP file. To access this machine, we needed to use a VPN to tie into the HTBA private network which was done using an OpenVPN file provide by the platform. The following commands established the VPN connection:
 
         sudo openvpn academy-regular.ovpn
 
@@ -116,9 +116,9 @@ We then needed to use an RDP client to connect to the specific machine in questi
         sudo apt install freerdp2-x11
         xfreerdp /u:htb-student /p:*********** /v:***********
 
-where /p is followed by the user's password, and /v is followed by the target host's IP address. Now, our analysis was able to begin. We opened Wireshark via the command line, and then used the Capture tab on the radial menu to select the ENS224 interface, and opened a capture session on this interface. 
+where /p is followed by the user's password, and /v is followed by the target host's IP address. Now, our analysis was able to begin. We opened Wireshark via the command line, and then used the Capture tab on the radial menu to select the ENS224 interface, subseuqently opening a capture session on this interface. 
 
-After allowing the capture to run for a few minutes, we returned to the machine to look at the traffic that had been generated. The HTBA module pointed us towards examining the FTP traffic within the capture. Thus, we this is where we focused our attention, using the string 'ftp' as a display filter to eliminate everything besides FTP traffic. Almost immediately, we were able to visually identify a few interesting details. Firstly, we noticed an anonymous login, which we know from our experience dabbling in penetration testing, is a major misconfiguration. This struck us as possibly malicious or suspicious traffic. 
+After allowing the capture to run for a few minutes, we returned to the machine to look at the traffic that had been generated. The HTBA module pointed us towards examining the FTP traffic within the capture, and so this is where we focused our attention, using the string 'ftp' as a display filter to eliminate everything besides FTP traffic. Almost immediately, we were able to visually identify a few interesting details. Firstly, we noticed an anonymous login, which we know from our experience dabbling in penetration testing, is a major misconfiguration. This struck us as possibly malicious or suspicious traffic. 
 
 <div>
   <img src="./lab-images/Wireshark/FTP/StrangeFTPTraffic.png" alt="Network Traffic Analysis Image" width="1400" height="150">
@@ -126,12 +126,12 @@ After allowing the capture to run for a few minutes, we returned to the machine 
   *Ref. 5: A snapshot of the suspicious FTP traffic, including the Anonymous login traffic*
 </div>
 
-The module asked us to find and save to our host the file that was transferred in this FTP exchange. Thus, we used Wireshark to follow the FTP conversation, and were able to discover a file was transferred called flag.jpeg from the FTP server to the client. 
+Returning to the task directions, we were then asked to find and save to our host an image file that was transferred in this FTP exchange. Thus, we used Wireshark to follow the FTP conversation, and were able to discover a file which had been transferred called flag.jpeg. 
 
 <div>
-  <img src="./lab-images/Wireshark/FTP/StrangeFTPTraffic.png" alt="Network Traffic Analysis Image" width="1400" height="150">
+  <img src="./lab-images/Wireshark/JFIF/FTPFileTransferFlag.png" alt="Network Traffic Analysis Image" width="700" height="250">
 
-  *Ref. 6:*
+  *Ref. 6: This image displays evidence of both the anonymous FTP login and the transfer of the flag.jpeg file*
 </div>
 
 The next section of the module gave us another PCAP ot analyze. This file, unlike the previous two sections, does not contain very much traffic, and is essentially just a single TCP session utilizing port 4444. This conversation appeared to facilitate a remote Windows shell, where each command was sent in the clear. By analyzing these commands, we were able to determine that a hacker had obtained access to a Windows host. This hacker, after some quick reconnaissance using the whoami and ipconfig commands, created a new user creatively named ‘hacker’, and then added this user to the administrators group. 
