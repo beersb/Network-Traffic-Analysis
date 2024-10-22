@@ -142,7 +142,7 @@ This discovery meant that the only remaining task for the FTP section of the lab
   *Ref. 7: The suspicious image discovered in the FTP exchange*
 </div>
 
-The next section of the module gave us another PCAP ot analyze. This file, unlike the previous two sections, does not contain very much traffic, and is essentially just a single TCP session utilizing port 4444. This conversation appeared to facilitate a remote Windows shell, where each command was sent in the clear. By analyzing these commands, we were able to determine that a hacker had obtained access to a Windows host. This hacker, after some quick reconnaissance using the whoami and ipconfig commands, created a new user creatively named ‘hacker’, and then added this user to the administrators group. 
+The next section of the module gave us another PCAP to analyze. This file, unlike the pcap files in the previous two sections, does not contain very much traffic, and is essentially just a single TCP session utilizing port 4444. This conversation appeared to facilitate a remote Windows shell, where each command was sent in the clear. By analyzing these commands, we were able to determine that a hacker had obtained access to a Windows host. This hacker, after some quick reconnaissance using the whoami and ipconfig commands, created a new user creatively named ‘hacker’, and then added this user to the administrators group. 
 
 <div>
   <img src="./lab-images/Wireshark/HackerUserCommands.png" alt="Network Traffic Analysis Image" width="600" height="150">
@@ -150,13 +150,13 @@ The next section of the module gave us another PCAP ot analyze. This file, unlik
   *Ref. 8: An image displaying the Windows commands discovered in the cleartext TCP stream*
 </div>
 
-After obtaining this information, the module moves onto a new section, in which we were given an additional PCAP file to analyze and told that in this scenario, we had discovered a TLS key (included in the course resources) which might prove useful in our analysis.  
+After we had obtained this information, the module prompted us to move onto a new section, in which we were given an additional PCAP file to analyze and told that in this scenario, we had discovered a TLS key (included in the course resources) which might prove useful in our analysis.  
 
-To start out, we niavely tried to simply apply the 'rdp' display filter to the PCAP file. However, it immediately became clear that this was not going to work. Doing a little more research, it turns out the RDP, by defualt, encrypts all of its traffic using TLS (hence the TLS key included in the resources). Because the traffic is encrypted, Wireshark can't dig into the packet and determine if the packet is RDP traffic, and it thus does not show up under the 'rdp' filter. Therefore, we adjusted our search, this time using the filter
+To start out, we naively tried to simply apply the 'rdp' display filter to the PCAP file. However, it immediately became clear that this was not going to work. Doing a little more research, it turns out the RDP, by defualt, encrypts all of its traffic using TLS (hence the TLS key included in the resources). Because the traffic is encrypted, Wireshark can't dig into the packet and determine whether the packet is RDP traffic, and it thus does not show up under the 'rdp' filter. Therefore, we adjusted our search, this time using the filter
 
         tcp.port == 3389
 
-This gave us an indication of traffic that at least has the potential to be RDP traffic, as 3389 is the defualt port for this service, but we still cannot be completely certain without decrypting the traffic. 
+This gave us all of the traffic that at least had the potential to be RDP, as 3389 is the defualt port for this service, but we still could not be completely certain without decrypting the traffic. 
 
 <div>
   <img src="./lab-images/Wireshark/RDP/EncryptedRDPTraffic.png" alt="Network Traffic Analysis Image" width="1000" height="250">
@@ -164,7 +164,7 @@ This gave us an indication of traffic that at least has the potential to be RDP 
   *Ref. 9: A snapshot of TLS encrypted packet data, which we suspected to be RDP traffic*
 </div>
 
-We now took steps to actually decrypt this traffic using the TLS key. To do this, one selects the Edit option of the radial menu, then from there, one selects Preferences, then Protocols, and finally, TLS. Next, one must click Edit once agian, and a new window will open. At this point, one clicks the + symbol to add a new key, then enters the IP address of the server (10.129.43.29 in the case of the lab), the port used for the communication (3389), and the path to the server key file, then save and refresh the PCAP file. 
+We then took steps to actually decrypt this traffic using the TLS key. To do perform this decryption with Wireshark, one selects the Edit option from the radial menu, then Preferences, followed by Protocols, and finally, TLS. Next, one must click Edit once agian, and a new window will open. At this point, one clicks the + symbol to add a new key, then enters the IP address of the server (10.129.43.29 in the case of the lab), the port used for the communication (3389), and the path to the server key file, then saves and refreshes the PCAP file. 
 
 <div>
   <img src="./lab-images/Wireshark/RDP/AddingTheTLSKey.png" alt="Network Traffic Analysis Image" width="800" height="150">
@@ -172,7 +172,7 @@ We now took steps to actually decrypt this traffic using the TLS key. To do this
   *Ref. 10: Adding the TLS key to the Wireshark session*
 </div>
 
-After following the steps above and refreshing the PCAP file, the traffic was unencrypted, and Wireshark was able to identify it as RDP traffic!
+After following the steps above and refreshing the PCAP file, the traffic we were interested in was unencrypted, and Wireshark was able to identify that is was indeed RDP traffic!
 
 <div>
   <img src="./lab-images/Wireshark/RDP/DecryptedRDPPackets.png" alt="Network Traffic Analysis Image" width="1000" height="250">
@@ -180,7 +180,7 @@ After following the steps above and refreshing the PCAP file, the traffic was un
   *Ref. 11: The RDP traffic after decryption*
 </div>
 
-Now that we had decrypted the traffic, the module asked us to dig through the packets to find the user credentials used to authenticate in the RDP session. Through visually inspecting the traffic, we found a packet called clientData. This seemed like the right place to look, and thus clicked on the packet. From there, we selected SendData, then clientInfoPDU, and after scrolling down a hair, we discovered the username and password used for the RDP session. This discovery concluded the module, and thereby, this lab. 
+Now that we had decrypted the traffic, the module asked us to dig through the packets to find the user credentials used to authenticate for the RDP session. Through visually inspecting the traffic, we found a packet called clientData. This seemed like the right place to look, and thus we clicked on the packet. From there, we selected SendData, then clientInfoPDU, and after scrolling down a hair, we discovered the username and password used for the RDP session. This discovery concluded the module, and thereby, this lab. 
 
 <div>
   <img src="./lab-images/Wireshark/RDP/UsernamePassowrd.png" alt="Network Traffic Analysis Image" width="500" height="100">
